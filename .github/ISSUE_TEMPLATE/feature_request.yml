@@ -1,0 +1,53 @@
+name: Feature Request
+description: Suggest an idea for this project
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature!
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+      description: Describe the problem you're trying to solve or what motivated this request
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the solution you'd like
+      placeholder: I would like to be able to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative solutions or features you've considered
+      placeholder: I also considered...
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Feature scope
+      options:
+        - New trigger type (e.g., file-watch, git-hook)
+        - New slash command
+        - Platform support
+        - Skill improvement
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Any other context, screenshots, or examples

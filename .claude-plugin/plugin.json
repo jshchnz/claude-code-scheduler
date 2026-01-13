@@ -1,0 +1,11 @@
+{
+  "name": "scheduler",
+  "description": "Schedule recurring Claude Code tasks with cron expressions",
+  "version": "0.1.0",
+  "author": {
+    "name": "jshchnz"
+  },
+  "repository": "https://github.com/jshchnz/claude-code-scheduler",
+  "license": "MIT",
+  "keywords": ["scheduler", "cron", "automation", "launchd", "crontab", "task-scheduler"]
+}

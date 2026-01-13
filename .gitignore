@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build cache
+.vite/
+
+# OS files
+.DS_Store
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+
+# Temp files
+*.tmp

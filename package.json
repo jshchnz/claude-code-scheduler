@@ -1,0 +1,61 @@
+{
+  "name": "claude-code-scheduler",
+  "version": "0.1.0",
+  "description": "Schedule recurring Claude Code tasks with cron expressions",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    ".claude-plugin",
+    "commands",
+    "skills",
+    "templates",
+    "examples"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "scheduler",
+    "cron",
+    "automation",
+    "launchd",
+    "crontab",
+    "task-scheduler"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jshchnz/claude-code-scheduler.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jshchnz/claude-code-scheduler/issues"
+  },
+  "homepage": "https://github.com/jshchnz/claude-code-scheduler#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "croner": "^8.1.2",
+    "cronstrue": "^2.52.0",
+    "execa": "^9.5.2",
+    "fs-extra": "^11.2.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.17"
+  }
+}

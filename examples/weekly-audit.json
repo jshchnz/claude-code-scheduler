@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "tasks": [
+    {
+      "id": "weekly-dependency-audit",
+      "name": "Weekly Dependency Audit",
+      "description": "Check for outdated dependencies and security vulnerabilities",
+      "enabled": true,
+      "trigger": {
+        "type": "cron",
+        "expression": "0 10 * * 1",
+        "timezone": "local"
+      },
+      "execution": {
+        "command": "Audit project dependencies: 1) Run npm audit or equivalent for security vulnerabilities, 2) Check for outdated packages, 3) Identify deprecated dependencies, 4) Create a summary report with recommended updates.",
+        "workingDirectory": ".",
+        "timeout": 600
+      },
+      "tags": ["security", "dependencies", "weekly"],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "weekly-pr-triage",
+      "name": "Weekly PR Triage",
+      "description": "Review and triage open pull requests",
+      "enabled": true,
+      "trigger": {
+        "type": "cron",
+        "expression": "0 9 * * 1",
+        "timezone": "local"
+      },
+      "execution": {
+        "command": "Review all open PRs: 1) List PRs older than 7 days, 2) Identify stale PRs needing attention, 3) Check for merge conflicts, 4) Suggest which PRs to prioritize for review.",
+        "workingDirectory": ".",
+        "timeout": 300
+      },
+      "tags": ["github", "pr-review", "weekly"],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "settings": {
+    "defaultTimezone": "local",
+    "logRetentionDays": 30,
+    "maxExecutionHistory": 100
+  }
+}

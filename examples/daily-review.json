@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "tasks": [
+    {
+      "id": "daily-code-review",
+      "name": "Daily Code Review",
+      "description": "Review commits from the previous day for code quality and potential issues",
+      "enabled": true,
+      "trigger": {
+        "type": "cron",
+        "expression": "0 9 * * 1-5",
+        "timezone": "local"
+      },
+      "execution": {
+        "command": "Review all commits from yesterday. Check for: 1) Code quality issues, 2) Security vulnerabilities, 3) Performance concerns, 4) Missing tests. Summarize findings and suggest improvements.",
+        "workingDirectory": ".",
+        "timeout": 300
+      },
+      "tags": ["code-quality", "daily"],
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z"
+    }
+  ],
+  "settings": {
+    "defaultTimezone": "local",
+    "logRetentionDays": 30,
+    "maxExecutionHistory": 100
+  }
+}
