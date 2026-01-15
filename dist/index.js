@@ -13,4 +13,6 @@ export { ensureLogsDir, readTaskLog, appendToLog, clearTaskLog, getLogSize, rota
 export { getHistoryPath, recordExecution, createHistoryRecord, completeHistoryRecord, getRecentExecutions, getExecutionById, getExecutionStats, cleanupOldHistory, formatProjectPath, getStatusIcon, 
 // Log file scanning (primary method)
 scanExecutionLogs, getScannedExecutionByTaskId, readLogContent, } from './history/index.js';
+// Git worktree utilities
+export { isGitRepo, generateWorktreeName, getWorktreeBasePath, createWorktree, commitAndPush, removeWorktree, worktreeExists, } from './vcs/index.js';
 //# sourceMappingURL=index.js.map

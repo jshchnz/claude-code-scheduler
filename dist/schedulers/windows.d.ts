@@ -14,6 +14,10 @@ export declare class WindowsScheduler extends BaseScheduler {
      * Get the task name for Task Scheduler
      */
     private getTaskName;
+    /**
+     * Get the path for a worktree script
+     */
+    private getWorktreeScriptPath;
     register(task: ScheduledTask): Promise<void>;
     unregister(taskId: string): Promise<void>;
     isRegistered(taskId: string): Promise<boolean>;

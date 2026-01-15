@@ -56,6 +56,15 @@ export declare abstract class BaseScheduler {
      * Get the task label/identifier for the native scheduler
      */
     protected getTaskLabel(taskId: string): string;
+    /**
+     * Check if task uses worktree execution
+     */
+    protected usesWorktree(task: ScheduledTask): boolean;
+    /**
+     * Generate a shell script for git worktree-based execution
+     * Returns null if worktree is not enabled
+     */
+    protected generateWorktreeScript(task: ScheduledTask, logDir: string): string | null;
 }
 /**
  * Error thrown when scheduler operations fail

@@ -34,6 +34,38 @@ export declare const TriggerConfigSchema: z.ZodDiscriminatedUnion<"type", [z.Zod
 }>]>;
 export type TriggerConfig = z.infer<typeof TriggerConfigSchema>;
 /**
+ * Configuration for running tasks in isolated git worktrees or jj workspaces
+ */
+export declare const WorktreeConfigSchema: z.ZodObject<{
+    /**
+     * Whether to run the task in an isolated worktree/workspace
+     */
+    enabled: z.ZodDefault<z.ZodBoolean>;
+    /**
+     * Base path where worktrees are created (default: sibling .worktrees dir)
+     */
+    basePath: z.ZodOptional<z.ZodString>;
+    /**
+     * Prefix for branch names (default: 'claude-task/')
+     */
+    branchPrefix: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    /**
+     * Remote name for pushing (default: 'origin')
+     */
+    remoteName: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+}, "strip", z.ZodTypeAny, {
+    enabled: boolean;
+    branchPrefix: string;
+    remoteName: string;
+    basePath?: string | undefined;
+}, {
+    enabled?: boolean | undefined;
+    basePath?: string | undefined;
+    branchPrefix?: string | undefined;
+    remoteName?: string | undefined;
+}>;
+export type WorktreeConfig = z.infer<typeof WorktreeConfigSchema>;
+/**
  * What to execute when triggered
  */
 export declare const ExecutionConfigSchema: z.ZodObject<{
@@ -59,18 +91,61 @@ export declare const ExecutionConfigSchema: z.ZodObject<{
      * Required for tasks that need to edit files, run commands, etc.
      */
     skipPermissions: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+    /**
+     * Worktree/workspace configuration for isolated execution
+     */
+    worktree: z.ZodOptional<z.ZodObject<{
+        /**
+         * Whether to run the task in an isolated worktree/workspace
+         */
+        enabled: z.ZodDefault<z.ZodBoolean>;
+        /**
+         * Base path where worktrees are created (default: sibling .worktrees dir)
+         */
+        basePath: z.ZodOptional<z.ZodString>;
+        /**
+         * Prefix for branch names (default: 'claude-task/')
+         */
+        branchPrefix: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+        /**
+         * Remote name for pushing (default: 'origin')
+         */
+        remoteName: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    }, "strip", z.ZodTypeAny, {
+        enabled: boolean;
+        branchPrefix: string;
+        remoteName: string;
+        basePath?: string | undefined;
+    }, {
+        enabled?: boolean | undefined;
+        basePath?: string | undefined;
+        branchPrefix?: string | undefined;
+        remoteName?: string | undefined;
+    }>>;
 }, "strip", z.ZodTypeAny, {
     command: string;
     workingDirectory: string;
     timeout: number;
     skipPermissions: boolean;
     env?: Record<string, string> | undefined;
+    worktree?: {
+        enabled: boolean;
+        branchPrefix: string;
+        remoteName: string;
+        basePath?: string | undefined;
+    } | undefined;
 }, {
     command: string;
     workingDirectory?: string | undefined;
     timeout?: number | undefined;
     env?: Record<string, string> | undefined;
     skipPermissions?: boolean | undefined;
+    worktree?: {
+        enabled?: boolean | undefined;
+        basePath?: string | undefined;
+        branchPrefix?: string | undefined;
+        remoteName?: string | undefined;
+    } | undefined;
 }>;
 export type ExecutionConfig = z.infer<typeof ExecutionConfigSchema>;
 /**
@@ -135,6 +210,9 @@ export declare const ExecutionHistoryRecordSchema: z.ZodObject<{
     taskName: z.ZodString;
     project: z.ZodString;
     cronExpression: z.ZodOptional<z.ZodString>;
+    worktreePath: z.ZodOptional<z.ZodString>;
+    worktreeBranch: z.ZodOptional<z.ZodString>;
+    worktreePushed: z.ZodOptional<z.ZodBoolean>;
 }, "strip", z.ZodTypeAny, {
     status: "timeout" | "success" | "failure" | "skipped" | "running";
     id: string;
@@ -149,6 +227,9 @@ export declare const ExecutionHistoryRecordSchema: z.ZodObject<{
     error?: string | undefined;
     exitCode?: number | undefined;
     cronExpression?: string | undefined;
+    worktreePath?: string | undefined;
+    worktreeBranch?: string | undefined;
+    worktreePushed?: boolean | undefined;
 }, {
     status: "timeout" | "success" | "failure" | "skipped" | "running";
     id: string;
@@ -163,6 +244,9 @@ export declare const ExecutionHistoryRecordSchema: z.ZodObject<{
     error?: string | undefined;
     exitCode?: number | undefined;
     cronExpression?: string | undefined;
+    worktreePath?: string | undefined;
+    worktreeBranch?: string | undefined;
+    worktreePushed?: boolean | undefined;
 }>;
 export type ExecutionHistoryRecord = z.infer<typeof ExecutionHistoryRecordSchema>;
 /**
@@ -227,18 +311,61 @@ export declare const ScheduledTaskSchema: z.ZodObject<{
          * Required for tasks that need to edit files, run commands, etc.
          */
         skipPermissions: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+        /**
+         * Worktree/workspace configuration for isolated execution
+         */
+        worktree: z.ZodOptional<z.ZodObject<{
+            /**
+             * Whether to run the task in an isolated worktree/workspace
+             */
+            enabled: z.ZodDefault<z.ZodBoolean>;
+            /**
+             * Base path where worktrees are created (default: sibling .worktrees dir)
+             */
+            basePath: z.ZodOptional<z.ZodString>;
+            /**
+             * Prefix for branch names (default: 'claude-task/')
+             */
+            branchPrefix: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+            /**
+             * Remote name for pushing (default: 'origin')
+             */
+            remoteName: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+        }, "strip", z.ZodTypeAny, {
+            enabled: boolean;
+            branchPrefix: string;
+            remoteName: string;
+            basePath?: string | undefined;
+        }, {
+            enabled?: boolean | undefined;
+            basePath?: string | undefined;
+            branchPrefix?: string | undefined;
+            remoteName?: string | undefined;
+        }>>;
     }, "strip", z.ZodTypeAny, {
         command: string;
         workingDirectory: string;
         timeout: number;
         skipPermissions: boolean;
         env?: Record<string, string> | undefined;
+        worktree?: {
+            enabled: boolean;
+            branchPrefix: string;
+            remoteName: string;
+            basePath?: string | undefined;
+        } | undefined;
     }, {
         command: string;
         workingDirectory?: string | undefined;
         timeout?: number | undefined;
         env?: Record<string, string> | undefined;
         skipPermissions?: boolean | undefined;
+        worktree?: {
+            enabled?: boolean | undefined;
+            basePath?: string | undefined;
+            branchPrefix?: string | undefined;
+            remoteName?: string | undefined;
+        } | undefined;
     }>;
     /**
      * Tags for organization
@@ -253,9 +380,9 @@ export declare const ScheduledTaskSchema: z.ZodObject<{
      */
     updatedAt: z.ZodString;
 }, "strip", z.ZodTypeAny, {
+    enabled: boolean;
     id: string;
     name: string;
-    enabled: boolean;
     trigger: {
         type: "cron";
         expression: string;
@@ -267,6 +394,12 @@ export declare const ScheduledTaskSchema: z.ZodObject<{
         timeout: number;
         skipPermissions: boolean;
         env?: Record<string, string> | undefined;
+        worktree?: {
+            enabled: boolean;
+            branchPrefix: string;
+            remoteName: string;
+            basePath?: string | undefined;
+        } | undefined;
     };
     tags: string[];
     createdAt: string;
@@ -286,11 +419,17 @@ export declare const ScheduledTaskSchema: z.ZodObject<{
         timeout?: number | undefined;
         env?: Record<string, string> | undefined;
         skipPermissions?: boolean | undefined;
+        worktree?: {
+            enabled?: boolean | undefined;
+            basePath?: string | undefined;
+            branchPrefix?: string | undefined;
+            remoteName?: string | undefined;
+        } | undefined;
     };
     createdAt: string;
     updatedAt: string;
-    description?: string | undefined;
     enabled?: boolean | undefined;
+    description?: string | undefined;
     tags?: string[] | undefined;
 }>;
 export type ScheduledTask = z.infer<typeof ScheduledTaskSchema>;
@@ -390,18 +529,61 @@ export declare const SchedulesConfigSchema: z.ZodObject<{
              * Required for tasks that need to edit files, run commands, etc.
              */
             skipPermissions: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
+            /**
+             * Worktree/workspace configuration for isolated execution
+             */
+            worktree: z.ZodOptional<z.ZodObject<{
+                /**
+                 * Whether to run the task in an isolated worktree/workspace
+                 */
+                enabled: z.ZodDefault<z.ZodBoolean>;
+                /**
+                 * Base path where worktrees are created (default: sibling .worktrees dir)
+                 */
+                basePath: z.ZodOptional<z.ZodString>;
+                /**
+                 * Prefix for branch names (default: 'claude-task/')
+                 */
+                branchPrefix: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+                /**
+                 * Remote name for pushing (default: 'origin')
+                 */
+                remoteName: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+            }, "strip", z.ZodTypeAny, {
+                enabled: boolean;
+                branchPrefix: string;
+                remoteName: string;
+                basePath?: string | undefined;
+            }, {
+                enabled?: boolean | undefined;
+                basePath?: string | undefined;
+                branchPrefix?: string | undefined;
+                remoteName?: string | undefined;
+            }>>;
         }, "strip", z.ZodTypeAny, {
             command: string;
             workingDirectory: string;
             timeout: number;
             skipPermissions: boolean;
             env?: Record<string, string> | undefined;
+            worktree?: {
+                enabled: boolean;
+                branchPrefix: string;
+                remoteName: string;
+                basePath?: string | undefined;
+            } | undefined;
         }, {
             command: string;
             workingDirectory?: string | undefined;
             timeout?: number | undefined;
             env?: Record<string, string> | undefined;
             skipPermissions?: boolean | undefined;
+            worktree?: {
+                enabled?: boolean | undefined;
+                basePath?: string | undefined;
+                branchPrefix?: string | undefined;
+                remoteName?: string | undefined;
+            } | undefined;
         }>;
         /**
          * Tags for organization
@@ -416,9 +598,9 @@ export declare const SchedulesConfigSchema: z.ZodObject<{
          */
         updatedAt: z.ZodString;
     }, "strip", z.ZodTypeAny, {
+        enabled: boolean;
         id: string;
         name: string;
-        enabled: boolean;
         trigger: {
             type: "cron";
             expression: string;
@@ -430,6 +612,12 @@ export declare const SchedulesConfigSchema: z.ZodObject<{
             timeout: number;
             skipPermissions: boolean;
             env?: Record<string, string> | undefined;
+            worktree?: {
+                enabled: boolean;
+                branchPrefix: string;
+                remoteName: string;
+                basePath?: string | undefined;
+            } | undefined;
         };
         tags: string[];
         createdAt: string;
@@ -449,11 +637,17 @@ export declare const SchedulesConfigSchema: z.ZodObject<{
             timeout?: number | undefined;
             env?: Record<string, string> | undefined;
             skipPermissions?: boolean | undefined;
+            worktree?: {
+                enabled?: boolean | undefined;
+                basePath?: string | undefined;
+                branchPrefix?: string | undefined;
+                remoteName?: string | undefined;
+            } | undefined;
         };
         createdAt: string;
         updatedAt: string;
-        description?: string | undefined;
         enabled?: boolean | undefined;
+        description?: string | undefined;
         tags?: string[] | undefined;
     }>, "many">;
     /**
@@ -484,9 +678,9 @@ export declare const SchedulesConfigSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     version: 1;
     tasks: {
+        enabled: boolean;
         id: string;
         name: string;
-        enabled: boolean;
         trigger: {
             type: "cron";
             expression: string;
@@ -498,6 +692,12 @@ export declare const SchedulesConfigSchema: z.ZodObject<{
             timeout: number;
             skipPermissions: boolean;
             env?: Record<string, string> | undefined;
+            worktree?: {
+                enabled: boolean;
+                branchPrefix: string;
+                remoteName: string;
+                basePath?: string | undefined;
+            } | undefined;
         };
         tags: string[];
         createdAt: string;
@@ -525,11 +725,17 @@ export declare const SchedulesConfigSchema: z.ZodObject<{
             timeout?: number | undefined;
             env?: Record<string, string> | undefined;
             skipPermissions?: boolean | undefined;
+            worktree?: {
+                enabled?: boolean | undefined;
+                basePath?: string | undefined;
+                branchPrefix?: string | undefined;
+                remoteName?: string | undefined;
+            } | undefined;
         };
         createdAt: string;
         updatedAt: string;
-        description?: string | undefined;
         enabled?: boolean | undefined;
+        description?: string | undefined;
         tags?: string[] | undefined;
     }[];
     settings?: {

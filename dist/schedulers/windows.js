@@ -1,4 +1,6 @@
 import { execa } from 'execa';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import { BaseScheduler, SchedulerError } from './base.js';
 import { getLogsDir } from '../config.js';
 /**
@@ -17,13 +19,45 @@ export class WindowsScheduler extends BaseScheduler {
     getTaskName(taskId) {
         return `${this.TASK_FOLDER}\\${taskId}`;
     }
+    /**
+     * Get the path for a worktree script
+     */
+    getWorktreeScriptPath(taskId) {
+        return path.join(getLogsDir(), `${taskId}.worktree.sh`);
+    }
     async register(task) {
         try {
             const cronExpr = this.getCronExpression(task);
-            const command = this.getExecutionCommand(task);
-            const workDir = this.getWorkingDirectory(task);
             const taskName = this.getTaskName(task.id);
-            const logPath = `${getLogsDir()}\\${task.id}.log`;
+            const logDir = getLogsDir();
+            const logPath = `${logDir}\\${task.id}.log`;
+            // Ensure logs directory exists
+            await fs.ensureDir(logDir);
+            // Determine the task run command
+            let taskCommand;
+            if (this.usesWorktree(task)) {
+                // Generate and write worktree script
+                const script = this.generateWorktreeScript(task, logDir);
+                if (script) {
+                    const scriptPath = this.getWorktreeScriptPath(task.id);
+                    await fs.writeFile(scriptPath, script, { mode: 0o755 });
+                    // Use Git Bash to run the script (Git must be installed for worktrees anyway)
+                    // Convert Windows path to Unix-style for bash
+                    const unixScriptPath = scriptPath.replace(/\\/g, '/');
+                    taskCommand = `cmd /c "bash "${unixScriptPath}" >> "${logPath}" 2>&1"`;
+                }
+                else {
+                    // Fallback to direct execution
+                    const command = this.getExecutionCommand(task);
+                    const workDir = this.getWorkingDirectory(task);
+                    taskCommand = `cmd /c "cd /d "${workDir}" && ${command} >> "${logPath}" 2>&1"`;
+                }
+            }
+            else {
+                const command = this.getExecutionCommand(task);
+                const workDir = this.getWorkingDirectory(task);
+                taskCommand = `cmd /c "cd /d "${workDir}" && ${command} >> "${logPath}" 2>&1"`;
+            }
             // Parse cron to schtasks format
             const { schedule, modifier, time, days } = this.cronToSchtasksArgs(cronExpr);
             // Delete existing task if present (ignore errors)
@@ -39,7 +73,7 @@ export class WindowsScheduler extends BaseScheduler {
                 '/TN',
                 taskName,
                 '/TR',
-                `cmd /c "cd /d "${workDir}" && ${command} >> "${logPath}" 2>&1"`,
+                taskCommand,
                 '/SC',
                 schedule,
             ];

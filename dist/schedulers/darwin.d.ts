@@ -12,6 +12,10 @@ export declare class DarwinScheduler extends BaseScheduler {
      * Get the plist file path for a task
      */
     private getPlistPath;
+    /**
+     * Get the path for a worktree script
+     */
+    private getWorktreeScriptPath;
     register(task: ScheduledTask): Promise<void>;
     unregister(taskId: string): Promise<void>;
     isRegistered(taskId: string): Promise<boolean>;

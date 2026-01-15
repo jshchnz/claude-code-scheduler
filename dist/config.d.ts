@@ -20,6 +20,10 @@ export declare function getLogsDir(): string;
  */
 export declare function getTaskLogPath(taskId: string): string;
 /**
+ * Get the worktree script path for a specific task
+ */
+export declare function getWorktreeScriptPath(taskId: string): string;
+/**
  * Load a schedules config from a path, returning empty config if not found
  */
 export declare function loadConfig(configPath: string): Promise<SchedulesConfig>;

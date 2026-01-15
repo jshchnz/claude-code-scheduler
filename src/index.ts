@@ -60,3 +60,19 @@ export {
   readLogContent,
 } from './history/index.js';
 export type { HistoryQueryOptions, ScannedExecution } from './history/index.js';
+
+// Git worktree utilities
+export {
+  isGitRepo,
+  generateWorktreeName,
+  getWorktreeBasePath,
+  createWorktree,
+  commitAndPush,
+  removeWorktree,
+  worktreeExists,
+} from './vcs/index.js';
+export type {
+  WorktreeContext,
+  CreateWorktreeParams,
+  WorktreeResult,
+} from './vcs/types.js';
