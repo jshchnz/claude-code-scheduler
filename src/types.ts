@@ -24,6 +24,59 @@ export const TriggerConfigSchema = z.discriminatedUnion('type', [
 export type TriggerConfig = z.infer<typeof TriggerConfigSchema>;
 
 // =============================================================================
+// Worktree/Workspace Configuration
+// =============================================================================
+
+/**
+ * Configuration for running tasks in isolated git worktrees or jj workspaces
+ */
+export const WorktreeConfigSchema = z.object({
+  /**
+   * Whether to run the task in an isolated worktree/workspace
+   */
+  enabled: z.boolean().default(false),
+
+  /**
+   * Base path where worktrees are created (default: sibling .worktrees dir)
+   * Must contain only safe filesystem characters.
+   */
+  basePath: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || /^[a-zA-Z0-9/_. ~-]+$/.test(val),
+      'basePath contains invalid characters (only alphanumeric, /, _, ., ~, - and spaces allowed)'
+    ),
+
+  /**
+   * Prefix for branch names (default: 'claude-task/')
+   * Must be a valid git ref prefix.
+   */
+  branchPrefix: z
+    .string()
+    .optional()
+    .default('claude-task/')
+    .refine(
+      (val) => /^[a-zA-Z0-9/_.-]+$/.test(val),
+      'branchPrefix must only contain alphanumeric, /, _, ., -'
+    ),
+
+  /**
+   * Remote name for pushing (default: 'origin')
+   * Must be a valid git remote name.
+   */
+  remoteName: z
+    .string()
+    .optional()
+    .default('origin')
+    .refine(
+      (val) => /^[a-zA-Z0-9_.-]+$/.test(val),
+      'remoteName must only contain alphanumeric, _, ., -'
+    ),
+});
+export type WorktreeConfig = z.infer<typeof WorktreeConfigSchema>;
+
+// =============================================================================
 // Execution Configuration
 // =============================================================================
 
@@ -57,6 +110,11 @@ export const ExecutionConfigSchema = z.object({
    * Required for tasks that need to edit files, run commands, etc.
    */
   skipPermissions: z.boolean().optional().default(false),
+
+  /**
+   * Worktree/workspace configuration for isolated execution
+   */
+  worktree: WorktreeConfigSchema.optional(),
 });
 export type ExecutionConfig = z.infer<typeof ExecutionConfigSchema>;
 
@@ -101,6 +159,10 @@ export const ExecutionHistoryRecordSchema = ExecutionRecordSchema.extend({
   taskName: z.string().describe('Task name at time of execution'),
   project: z.string().describe('Working directory / project path'),
   cronExpression: z.string().optional().describe('Cron expression for context'),
+  // Worktree tracking
+  worktreePath: z.string().optional().describe('Path to worktree/workspace used'),
+  worktreeBranch: z.string().optional().describe('Branch/bookmark created'),
+  worktreePushed: z.boolean().optional().describe('Whether changes were pushed'),
 });
 export type ExecutionHistoryRecord = z.infer<typeof ExecutionHistoryRecordSchema>;
 

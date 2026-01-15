@@ -12,6 +12,8 @@ export declare function recordExecution(record: ExecutionHistoryRecord): Promise
  */
 export declare function createHistoryRecord(taskId: string, taskName: string, project: string, triggeredBy: string, options?: {
     cronExpression?: string;
+    worktreePath?: string;
+    worktreeBranch?: string;
 }): ExecutionHistoryRecord;
 /**
  * Complete an execution record with results
@@ -21,6 +23,7 @@ export declare function completeHistoryRecord(record: ExecutionHistoryRecord, re
     output?: string;
     error?: string;
     exitCode?: number;
+    worktreePushed?: boolean;
 }): ExecutionHistoryRecord;
 export interface HistoryQueryOptions {
     limit?: number;
@@ -68,6 +71,9 @@ export interface ScannedExecution {
     project?: string;
     command?: string;
     isOneTime: boolean;
+    worktreePath?: string;
+    worktreeBranch?: string;
+    worktreePushed?: boolean;
 }
 /**
  * Scan log files to reconstruct execution history

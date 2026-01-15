@@ -4,6 +4,7 @@ import {
   ExecutionConfigSchema,
   ScheduledTaskSchema,
   SchedulesConfigSchema,
+  WorktreeConfigSchema,
   createEmptyConfig,
   generateTaskId,
   createTask,
@@ -241,5 +242,118 @@ describe('createTask', () => {
     expect(task.execution.timeout).toBe(600)
     expect(task.trigger.timezone).toBe('UTC')
     expect(task.tags).toEqual(['test', 'example'])
+  })
+})
+
+describe('WorktreeConfigSchema', () => {
+  it('validates a minimal worktree config', () => {
+    const config = { enabled: true }
+    expect(() => WorktreeConfigSchema.parse(config)).not.toThrow()
+  })
+
+  it('sets default values', () => {
+    const config = { enabled: true }
+    const parsed = WorktreeConfigSchema.parse(config)
+    expect(parsed.branchPrefix).toBe('claude-task/')
+    expect(parsed.remoteName).toBe('origin')
+  })
+
+  it('accepts valid branchPrefix', () => {
+    const config = {
+      enabled: true,
+      branchPrefix: 'feature/claude-',
+    }
+    expect(() => WorktreeConfigSchema.parse(config)).not.toThrow()
+  })
+
+  it('accepts valid remoteName', () => {
+    const config = {
+      enabled: true,
+      remoteName: 'upstream',
+    }
+    expect(() => WorktreeConfigSchema.parse(config)).not.toThrow()
+  })
+
+  it('accepts valid basePath', () => {
+    const config = {
+      enabled: true,
+      basePath: '/home/user/worktrees',
+    }
+    expect(() => WorktreeConfigSchema.parse(config)).not.toThrow()
+  })
+
+  // Security tests for input validation
+  describe('security validations', () => {
+    it('rejects branchPrefix with shell metacharacters', () => {
+      const config = {
+        enabled: true,
+        branchPrefix: 'test; rm -rf /',
+      }
+      expect(() => WorktreeConfigSchema.parse(config)).toThrow()
+    })
+
+    it('rejects branchPrefix with backticks', () => {
+      const config = {
+        enabled: true,
+        branchPrefix: 'test`whoami`',
+      }
+      expect(() => WorktreeConfigSchema.parse(config)).toThrow()
+    })
+
+    it('rejects branchPrefix with $() syntax', () => {
+      const config = {
+        enabled: true,
+        branchPrefix: 'test$(id)',
+      }
+      expect(() => WorktreeConfigSchema.parse(config)).toThrow()
+    })
+
+    it('rejects remoteName with semicolons', () => {
+      const config = {
+        enabled: true,
+        remoteName: 'origin; malicious',
+      }
+      expect(() => WorktreeConfigSchema.parse(config)).toThrow()
+    })
+
+    it('rejects remoteName with spaces', () => {
+      const config = {
+        enabled: true,
+        remoteName: 'origin upstream',
+      }
+      expect(() => WorktreeConfigSchema.parse(config)).toThrow()
+    })
+
+    it('rejects remoteName with slashes', () => {
+      const config = {
+        enabled: true,
+        remoteName: 'origin/test',
+      }
+      expect(() => WorktreeConfigSchema.parse(config)).toThrow()
+    })
+
+    it('rejects basePath with shell metacharacters', () => {
+      const config = {
+        enabled: true,
+        basePath: '/path; rm -rf /',
+      }
+      expect(() => WorktreeConfigSchema.parse(config)).toThrow()
+    })
+
+    it('rejects basePath with backticks', () => {
+      const config = {
+        enabled: true,
+        basePath: '/path`whoami`',
+      }
+      expect(() => WorktreeConfigSchema.parse(config)).toThrow()
+    })
+
+    it('rejects basePath with $() syntax', () => {
+      const config = {
+        enabled: true,
+        basePath: '/path$(id)',
+      }
+      expect(() => WorktreeConfigSchema.parse(config)).toThrow()
+    })
   })
 })

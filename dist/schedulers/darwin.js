@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { BaseScheduler, SchedulerError } from './base.js';
 import { getLogsDir } from '../config.js';
+import { shellEscape } from '../utils/shell.js';
 /**
  * macOS launchd scheduler implementation
  */
@@ -21,14 +22,29 @@ export class DarwinScheduler extends BaseScheduler {
     getPlistPath(taskId) {
         return path.join(this.launchAgentsDir, `${this.getTaskLabel(taskId)}.plist`);
     }
+    /**
+     * Get the path for a worktree script
+     */
+    getWorktreeScriptPath(taskId) {
+        return path.join(getLogsDir(), `${taskId}.worktree.sh`);
+    }
     async register(task) {
         try {
-            const plistContent = this.generatePlist(task);
-            const plistPath = this.getPlistPath(task.id);
             // Ensure LaunchAgents directory exists
             await fs.ensureDir(this.launchAgentsDir);
             // Ensure logs directory exists
-            await fs.ensureDir(getLogsDir());
+            const logDir = getLogsDir();
+            await fs.ensureDir(logDir);
+            // Generate and write worktree script if enabled
+            if (this.usesWorktree(task)) {
+                const script = this.generateWorktreeScript(task, logDir);
+                if (script) {
+                    const scriptPath = this.getWorktreeScriptPath(task.id);
+                    await fs.writeFile(scriptPath, script, { mode: 0o755 });
+                }
+            }
+            const plistContent = this.generatePlist(task);
+            const plistPath = this.getPlistPath(task.id);
             // Unload existing if present (ignore errors)
             try {
                 await execa('launchctl', ['unload', plistPath]);
@@ -111,11 +127,32 @@ export class DarwinScheduler extends BaseScheduler {
      */
     generatePlist(task) {
         const label = this.getTaskLabel(task.id);
-        const command = this.getExecutionCommand(task);
-        const workDir = this.getWorkingDirectory(task);
         const cronExpr = this.getCronExpression(task);
         const calendarInterval = this.cronToCalendarInterval(cronExpr);
         const logDir = getLogsDir();
+        // Determine the program arguments based on whether worktree is enabled
+        let programArgs;
+        if (this.usesWorktree(task)) {
+            const scriptPath = this.getWorktreeScriptPath(task.id);
+            programArgs = `    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>${this.escapeXml(scriptPath)}</string>
+    </array>`;
+        }
+        else {
+            const command = this.getExecutionCommand(task);
+            const workDir = this.getWorkingDirectory(task);
+            // Use shell escaping for workDir (single quotes prevent injection)
+            // Then XML escape the entire bash command for plist embedding
+            const shellCmd = `cd ${shellEscape(workDir)} && ${command}`;
+            programArgs = `    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>${this.escapeXml(shellCmd)}</string>
+    </array>`;
+        }
         return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -123,12 +160,7 @@ export class DarwinScheduler extends BaseScheduler {
     <key>Label</key>
     <string>${this.escapeXml(label)}</string>
 
-    <key>ProgramArguments</key>
-    <array>
-        <string>/bin/bash</string>
-        <string>-c</string>
-        <string>cd "${this.escapeXml(workDir)}" &amp;&amp; ${this.escapeXml(command)}</string>
-    </array>
+${programArgs}
 
     ${calendarInterval}
 

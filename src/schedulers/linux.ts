@@ -1,7 +1,10 @@
 import { execa } from 'execa';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 import { BaseScheduler, SchedulerStatus, SchedulerError } from './base.js';
 import type { ScheduledTask } from '../types.js';
 import { getLogsDir } from '../config.js';
+import { shellEscape } from '../utils/shell.js';
 
 /**
  * Linux crontab scheduler implementation
@@ -15,12 +18,45 @@ export class LinuxScheduler extends BaseScheduler {
    */
   private readonly MARKER_PREFIX = '# claude-scheduler:';
 
+  /**
+   * Get the path for a worktree script
+   */
+  private getWorktreeScriptPath(taskId: string): string {
+    return path.join(getLogsDir(), `${taskId}.worktree.sh`);
+  }
+
   async register(task: ScheduledTask): Promise<void> {
     try {
       const cronExpr = this.getCronExpression(task);
-      const command = this.getExecutionCommand(task);
-      const workDir = this.getWorkingDirectory(task);
-      const logPath = `${getLogsDir()}/${task.id}.log`;
+      const logDir = getLogsDir();
+      const logPath = `${logDir}/${task.id}.log`;
+
+      // Ensure logs directory exists
+      await fs.ensureDir(logDir);
+
+      // Determine the command to run
+      let cronCommand: string;
+
+      if (this.usesWorktree(task)) {
+        // Generate and write worktree script
+        const script = this.generateWorktreeScript(task, logDir);
+        if (script) {
+          const scriptPath = this.getWorktreeScriptPath(task.id);
+          await fs.writeFile(scriptPath, script, { mode: 0o755 });
+          // Shell escape the script path for safe execution
+          cronCommand = `bash ${shellEscape(scriptPath)}`;
+        } else {
+          // Fallback to direct execution with shell-escaped workDir
+          const command = this.getExecutionCommand(task);
+          const workDir = this.getWorkingDirectory(task);
+          cronCommand = `cd ${shellEscape(workDir)} && ${command}`;
+        }
+      } else {
+        // Direct execution with shell-escaped workDir
+        const command = this.getExecutionCommand(task);
+        const workDir = this.getWorkingDirectory(task);
+        cronCommand = `cd ${shellEscape(workDir)} && ${command}`;
+      }
 
       // Get current crontab
       const currentCrontab = await this.getCurrentCrontab();
@@ -31,7 +67,7 @@ export class LinuxScheduler extends BaseScheduler {
         .filter((line) => !line.includes(`${this.MARKER_PREFIX}${task.id}`));
 
       // Add new entry
-      const cronLine = `${cronExpr} cd "${workDir}" && ${command} >> "${logPath}" 2>&1 ${this.MARKER_PREFIX}${task.id}`;
+      const cronLine = `${cronExpr} ${cronCommand} >> "${logPath}" 2>&1 ${this.MARKER_PREFIX}${task.id}`;
       lines.push(cronLine);
 
       // Update crontab

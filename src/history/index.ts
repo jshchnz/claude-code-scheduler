@@ -46,6 +46,8 @@ export function createHistoryRecord(
   triggeredBy: string,
   options: {
     cronExpression?: string;
+    worktreePath?: string;
+    worktreeBranch?: string;
   } = {}
 ): ExecutionHistoryRecord {
   return {
@@ -57,6 +59,8 @@ export function createHistoryRecord(
     status: 'running',
     triggeredBy,
     cronExpression: options.cronExpression,
+    worktreePath: options.worktreePath,
+    worktreeBranch: options.worktreeBranch,
   };
 }
 
@@ -70,6 +74,7 @@ export function completeHistoryRecord(
     output?: string;
     error?: string;
     exitCode?: number;
+    worktreePushed?: boolean;
   }
 ): ExecutionHistoryRecord {
   const completedAt = new Date().toISOString();
@@ -84,6 +89,7 @@ export function completeHistoryRecord(
     output: result.output,
     error: result.error,
     exitCode: result.exitCode,
+    worktreePushed: result.worktreePushed,
   };
 }
 
@@ -285,6 +291,10 @@ export interface ScannedExecution {
   project?: string;
   command?: string;
   isOneTime: boolean;
+  // Worktree tracking
+  worktreePath?: string;
+  worktreeBranch?: string;
+  worktreePushed?: boolean;
 }
 
 /**

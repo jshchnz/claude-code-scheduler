@@ -42,6 +42,9 @@ export declare abstract class BaseScheduler {
     abstract listRegistered(): Promise<string[]>;
     /**
      * Generate the command to execute Claude in non-interactive mode
+     *
+     * Security: Uses single quotes for the prompt to prevent shell expansion
+     * of backticks, $(), and other shell metacharacters.
      */
     protected getExecutionCommand(task: ScheduledTask): string;
     /**
@@ -56,6 +59,18 @@ export declare abstract class BaseScheduler {
      * Get the task label/identifier for the native scheduler
      */
     protected getTaskLabel(taskId: string): string;
+    /**
+     * Check if task uses worktree execution
+     */
+    protected usesWorktree(task: ScheduledTask): boolean;
+    /**
+     * Generate a shell script for git worktree-based execution
+     * Returns null if worktree is not enabled
+     *
+     * Security: All user-provided values are escaped using shellEscape()
+     * to prevent command injection attacks.
+     */
+    protected generateWorktreeScript(task: ScheduledTask, logDir: string): string | null;
 }
 /**
  * Error thrown when scheduler operations fail

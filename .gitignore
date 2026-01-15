@@ -15,3 +15,6 @@ coverage/
 
 # Temp files
 *.tmp
+
+# Local test scripts (keep as dev utilities, not tracked)
+test-worktrees/
