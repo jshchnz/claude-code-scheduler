@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { BaseScheduler, SchedulerError } from './base.js';
 import { getLogsDir } from '../config.js';
+import { shellEscape } from '../utils/shell.js';
 /**
  * macOS launchd scheduler implementation
  */
@@ -142,11 +143,14 @@ export class DarwinScheduler extends BaseScheduler {
         else {
             const command = this.getExecutionCommand(task);
             const workDir = this.getWorkingDirectory(task);
+            // Use shell escaping for workDir (single quotes prevent injection)
+            // Then XML escape the entire bash command for plist embedding
+            const shellCmd = `cd ${shellEscape(workDir)} && ${command}`;
             programArgs = `    <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
         <string>-c</string>
-        <string>cd "${this.escapeXml(workDir)}" &amp;&amp; ${this.escapeXml(command)}</string>
+        <string>${this.escapeXml(shellCmd)}</string>
     </array>`;
         }
         return `<?xml version="1.0" encoding="UTF-8"?>

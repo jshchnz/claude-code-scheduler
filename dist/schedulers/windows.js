@@ -25,6 +25,13 @@ export class WindowsScheduler extends BaseScheduler {
     getWorktreeScriptPath(taskId) {
         return path.join(getLogsDir(), `${taskId}.worktree.sh`);
     }
+    /**
+     * Escape a string for safe embedding in PowerShell single-quoted strings.
+     * Single quotes in PowerShell are escaped by doubling them.
+     */
+    escapePowerShell(str) {
+        return str.replace(/'/g, "''");
+    }
     async register(task) {
         try {
             const cronExpr = this.getCronExpression(task);
@@ -34,6 +41,7 @@ export class WindowsScheduler extends BaseScheduler {
             // Ensure logs directory exists
             await fs.ensureDir(logDir);
             // Determine the task run command
+            // Use PowerShell for reliable quoting and redirection
             let taskCommand;
             if (this.usesWorktree(task)) {
                 // Generate and write worktree script
@@ -41,22 +49,30 @@ export class WindowsScheduler extends BaseScheduler {
                 if (script) {
                     const scriptPath = this.getWorktreeScriptPath(task.id);
                     await fs.writeFile(scriptPath, script, { mode: 0o755 });
-                    // Use Git Bash to run the script (Git must be installed for worktrees anyway)
+                    // Use Git Bash to run the script via PowerShell
                     // Convert Windows path to Unix-style for bash
                     const unixScriptPath = scriptPath.replace(/\\/g, '/');
-                    taskCommand = `cmd /c "bash "${unixScriptPath}" >> "${logPath}" 2>&1"`;
+                    const psScriptPath = this.escapePowerShell(unixScriptPath);
+                    const psLogPath = this.escapePowerShell(logPath);
+                    taskCommand = `powershell -NoProfile -Command "& bash '${psScriptPath}' *>> '${psLogPath}'"`;
                 }
                 else {
                     // Fallback to direct execution
                     const command = this.getExecutionCommand(task);
                     const workDir = this.getWorkingDirectory(task);
-                    taskCommand = `cmd /c "cd /d "${workDir}" && ${command} >> "${logPath}" 2>&1"`;
+                    const psWorkDir = this.escapePowerShell(workDir);
+                    const psCommand = this.escapePowerShell(command);
+                    const psLogPath = this.escapePowerShell(logPath);
+                    taskCommand = `powershell -NoProfile -Command "Set-Location '${psWorkDir}'; ${psCommand} *>> '${psLogPath}'"`;
                 }
             }
             else {
                 const command = this.getExecutionCommand(task);
                 const workDir = this.getWorkingDirectory(task);
-                taskCommand = `cmd /c "cd /d "${workDir}" && ${command} >> "${logPath}" 2>&1"`;
+                const psWorkDir = this.escapePowerShell(workDir);
+                const psCommand = this.escapePowerShell(command);
+                const psLogPath = this.escapePowerShell(logPath);
+                taskCommand = `powershell -NoProfile -Command "Set-Location '${psWorkDir}'; ${psCommand} *>> '${psLogPath}'"`;
             }
             // Parse cron to schtasks format
             const { schedule, modifier, time, days } = this.cronToSchtasksArgs(cronExpr);

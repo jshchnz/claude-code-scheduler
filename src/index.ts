@@ -76,3 +76,13 @@ export type {
   CreateWorktreeParams,
   WorktreeResult,
 } from './vcs/types.js';
+
+// Shell utilities
+export {
+  shellEscape,
+  sanitizeForComment,
+  isSafeIdentifier,
+  GIT_REF_PATTERN,
+  GIT_REMOTE_PATTERN,
+  SAFE_PATH_PATTERN,
+} from './utils/shell.js';

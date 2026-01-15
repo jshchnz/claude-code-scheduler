@@ -30,16 +30,30 @@ export const WorktreeConfigSchema = z.object({
     enabled: z.boolean().default(false),
     /**
      * Base path where worktrees are created (default: sibling .worktrees dir)
+     * Must contain only safe filesystem characters.
      */
-    basePath: z.string().optional(),
+    basePath: z
+        .string()
+        .optional()
+        .refine((val) => !val || /^[a-zA-Z0-9/_. ~-]+$/.test(val), 'basePath contains invalid characters (only alphanumeric, /, _, ., ~, - and spaces allowed)'),
     /**
      * Prefix for branch names (default: 'claude-task/')
+     * Must be a valid git ref prefix.
      */
-    branchPrefix: z.string().optional().default('claude-task/'),
+    branchPrefix: z
+        .string()
+        .optional()
+        .default('claude-task/')
+        .refine((val) => /^[a-zA-Z0-9/_.-]+$/.test(val), 'branchPrefix must only contain alphanumeric, /, _, ., -'),
     /**
      * Remote name for pushing (default: 'origin')
+     * Must be a valid git remote name.
      */
-    remoteName: z.string().optional().default('origin'),
+    remoteName: z
+        .string()
+        .optional()
+        .default('origin')
+        .refine((val) => /^[a-zA-Z0-9_.-]+$/.test(val), 'remoteName must only contain alphanumeric, _, ., -'),
 });
 // =============================================================================
 // Execution Configuration

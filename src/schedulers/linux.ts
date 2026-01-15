@@ -4,6 +4,7 @@ import * as path from 'path';
 import { BaseScheduler, SchedulerStatus, SchedulerError } from './base.js';
 import type { ScheduledTask } from '../types.js';
 import { getLogsDir } from '../config.js';
+import { shellEscape } from '../utils/shell.js';
 
 /**
  * Linux crontab scheduler implementation
@@ -42,17 +43,19 @@ export class LinuxScheduler extends BaseScheduler {
         if (script) {
           const scriptPath = this.getWorktreeScriptPath(task.id);
           await fs.writeFile(scriptPath, script, { mode: 0o755 });
-          cronCommand = `bash "${scriptPath}"`;
+          // Shell escape the script path for safe execution
+          cronCommand = `bash ${shellEscape(scriptPath)}`;
         } else {
-          // Fallback to direct execution
+          // Fallback to direct execution with shell-escaped workDir
           const command = this.getExecutionCommand(task);
           const workDir = this.getWorkingDirectory(task);
-          cronCommand = `cd "${workDir}" && ${command}`;
+          cronCommand = `cd ${shellEscape(workDir)} && ${command}`;
         }
       } else {
+        // Direct execution with shell-escaped workDir
         const command = this.getExecutionCommand(task);
         const workDir = this.getWorkingDirectory(task);
-        cronCommand = `cd "${workDir}" && ${command}`;
+        cronCommand = `cd ${shellEscape(workDir)} && ${command}`;
       }
 
       // Get current crontab

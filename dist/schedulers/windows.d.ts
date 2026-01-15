@@ -18,6 +18,11 @@ export declare class WindowsScheduler extends BaseScheduler {
      * Get the path for a worktree script
      */
     private getWorktreeScriptPath;
+    /**
+     * Escape a string for safe embedding in PowerShell single-quoted strings.
+     * Single quotes in PowerShell are escaped by doubling them.
+     */
+    private escapePowerShell;
     register(task: ScheduledTask): Promise<void>;
     unregister(taskId: string): Promise<void>;
     isRegistered(taskId: string): Promise<boolean>;

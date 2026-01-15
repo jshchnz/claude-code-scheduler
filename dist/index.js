@@ -15,4 +15,6 @@ export { getHistoryPath, recordExecution, createHistoryRecord, completeHistoryRe
 scanExecutionLogs, getScannedExecutionByTaskId, readLogContent, } from './history/index.js';
 // Git worktree utilities
 export { isGitRepo, generateWorktreeName, getWorktreeBasePath, createWorktree, commitAndPush, removeWorktree, worktreeExists, } from './vcs/index.js';
+// Shell utilities
+export { shellEscape, sanitizeForComment, isSafeIdentifier, GIT_REF_PATTERN, GIT_REMOTE_PATTERN, SAFE_PATH_PATTERN, } from './utils/shell.js';
 //# sourceMappingURL=index.js.map

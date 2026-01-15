@@ -85,6 +85,9 @@ export async function commitAndPush(
 ): Promise<WorktreeResult> {
   const { worktreePath, branchName } = ctx;
 
+  // Track whether we detected changes (for accurate error reporting)
+  let hadChanges = false;
+
   try {
     // Stage all changes
     await execa('git', ['add', '-A'], { cwd: worktreePath });
@@ -97,6 +100,9 @@ export async function commitAndPush(
     if (!status.trim()) {
       return { success: true, pushed: false, hadChanges: false };
     }
+
+    // Now we know there are changes
+    hadChanges = true;
 
     // Commit changes
     await execa('git', ['commit', '-m', message], { cwd: worktreePath });
@@ -119,21 +125,33 @@ export async function commitAndPush(
     return {
       success: false,
       pushed: false,
-      hadChanges: true,
+      hadChanges, // Use the tracked value, not assumed true
       error: error instanceof Error ? error.message : String(error),
     };
   }
 }
 
 /**
- * Remove a git worktree
+ * Remove a git worktree with retry logic.
+ * Retries once after a short delay to handle race conditions
+ * (e.g., file locks from recently completed processes).
  */
 export async function removeWorktree(ctx: WorktreeContext): Promise<void> {
   const { mainRepoPath, worktreePath } = ctx;
 
-  await execa('git', ['worktree', 'remove', worktreePath, '--force'], {
-    cwd: mainRepoPath,
-  });
+  const tryRemove = async () => {
+    await execa('git', ['worktree', 'remove', worktreePath, '--force'], {
+      cwd: mainRepoPath,
+    });
+  };
+
+  try {
+    await tryRemove();
+  } catch {
+    // Retry once after a short delay (handles file lock race conditions)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await tryRemove();
+  }
 }
 
 /**

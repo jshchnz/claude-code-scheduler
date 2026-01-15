@@ -43,16 +43,19 @@ export declare const WorktreeConfigSchema: z.ZodObject<{
     enabled: z.ZodDefault<z.ZodBoolean>;
     /**
      * Base path where worktrees are created (default: sibling .worktrees dir)
+     * Must contain only safe filesystem characters.
      */
-    basePath: z.ZodOptional<z.ZodString>;
+    basePath: z.ZodEffects<z.ZodOptional<z.ZodString>, string | undefined, string | undefined>;
     /**
      * Prefix for branch names (default: 'claude-task/')
+     * Must be a valid git ref prefix.
      */
-    branchPrefix: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    branchPrefix: z.ZodEffects<z.ZodDefault<z.ZodOptional<z.ZodString>>, string, string | undefined>;
     /**
      * Remote name for pushing (default: 'origin')
+     * Must be a valid git remote name.
      */
-    remoteName: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    remoteName: z.ZodEffects<z.ZodDefault<z.ZodOptional<z.ZodString>>, string, string | undefined>;
 }, "strip", z.ZodTypeAny, {
     enabled: boolean;
     branchPrefix: string;
@@ -101,16 +104,19 @@ export declare const ExecutionConfigSchema: z.ZodObject<{
         enabled: z.ZodDefault<z.ZodBoolean>;
         /**
          * Base path where worktrees are created (default: sibling .worktrees dir)
+         * Must contain only safe filesystem characters.
          */
-        basePath: z.ZodOptional<z.ZodString>;
+        basePath: z.ZodEffects<z.ZodOptional<z.ZodString>, string | undefined, string | undefined>;
         /**
          * Prefix for branch names (default: 'claude-task/')
+         * Must be a valid git ref prefix.
          */
-        branchPrefix: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+        branchPrefix: z.ZodEffects<z.ZodDefault<z.ZodOptional<z.ZodString>>, string, string | undefined>;
         /**
          * Remote name for pushing (default: 'origin')
+         * Must be a valid git remote name.
          */
-        remoteName: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+        remoteName: z.ZodEffects<z.ZodDefault<z.ZodOptional<z.ZodString>>, string, string | undefined>;
     }, "strip", z.ZodTypeAny, {
         enabled: boolean;
         branchPrefix: string;
@@ -321,16 +327,19 @@ export declare const ScheduledTaskSchema: z.ZodObject<{
             enabled: z.ZodDefault<z.ZodBoolean>;
             /**
              * Base path where worktrees are created (default: sibling .worktrees dir)
+             * Must contain only safe filesystem characters.
              */
-            basePath: z.ZodOptional<z.ZodString>;
+            basePath: z.ZodEffects<z.ZodOptional<z.ZodString>, string | undefined, string | undefined>;
             /**
              * Prefix for branch names (default: 'claude-task/')
+             * Must be a valid git ref prefix.
              */
-            branchPrefix: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+            branchPrefix: z.ZodEffects<z.ZodDefault<z.ZodOptional<z.ZodString>>, string, string | undefined>;
             /**
              * Remote name for pushing (default: 'origin')
+             * Must be a valid git remote name.
              */
-            remoteName: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+            remoteName: z.ZodEffects<z.ZodDefault<z.ZodOptional<z.ZodString>>, string, string | undefined>;
         }, "strip", z.ZodTypeAny, {
             enabled: boolean;
             branchPrefix: string;
@@ -539,16 +548,19 @@ export declare const SchedulesConfigSchema: z.ZodObject<{
                 enabled: z.ZodDefault<z.ZodBoolean>;
                 /**
                  * Base path where worktrees are created (default: sibling .worktrees dir)
+                 * Must contain only safe filesystem characters.
                  */
-                basePath: z.ZodOptional<z.ZodString>;
+                basePath: z.ZodEffects<z.ZodOptional<z.ZodString>, string | undefined, string | undefined>;
                 /**
                  * Prefix for branch names (default: 'claude-task/')
+                 * Must be a valid git ref prefix.
                  */
-                branchPrefix: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+                branchPrefix: z.ZodEffects<z.ZodDefault<z.ZodOptional<z.ZodString>>, string, string | undefined>;
                 /**
                  * Remote name for pushing (default: 'origin')
+                 * Must be a valid git remote name.
                  */
-                remoteName: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+                remoteName: z.ZodEffects<z.ZodDefault<z.ZodOptional<z.ZodString>>, string, string | undefined>;
             }, "strip", z.ZodTypeAny, {
                 enabled: boolean;
                 branchPrefix: string;
