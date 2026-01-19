@@ -37,6 +37,8 @@ export function createHistoryRecord(taskId, taskName, project, triggeredBy, opti
         status: 'running',
         triggeredBy,
         cronExpression: options.cronExpression,
+        worktreePath: options.worktreePath,
+        worktreeBranch: options.worktreeBranch,
     };
 }
 /**
@@ -54,6 +56,7 @@ export function completeHistoryRecord(record, result) {
         output: result.output,
         error: result.error,
         exitCode: result.exitCode,
+        worktreePushed: result.worktreePushed,
     };
 }
 /**

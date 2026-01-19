@@ -47,6 +47,13 @@ export function getTaskLogPath(taskId: string): string {
   return path.join(getLogsDir(), `${taskId}.log`);
 }
 
+/**
+ * Get the worktree script path for a specific task
+ */
+export function getWorktreeScriptPath(taskId: string): string {
+  return path.join(getLogsDir(), `${taskId}.worktree.sh`);
+}
+
 // =============================================================================
 // Config Loading
 // =============================================================================

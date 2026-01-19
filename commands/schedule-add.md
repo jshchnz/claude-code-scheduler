@@ -41,6 +41,11 @@ Help the user create a new scheduled task with proper configuration.
    - Ask if task needs autonomous execution (file edits, git operations, running commands)
      - If yes: set `skipPermissions: true` and add `--dangerously-skip-permissions` flag
      - If no (read-only analysis): omit the flag
+   - If task needs autonomous execution AND project is a git repo, ask about worktree isolation:
+     - If yes: set `worktree.enabled: true`
+     - Configure optional settings:
+       - `branchPrefix`: default "claude-task/"
+       - `remoteName`: default "origin"
 
 4. **Validate and Confirm**
    - For recurring: show cron expression and next 3 run times
@@ -163,6 +168,47 @@ Filename: `com.claude.schedule.once.<id>.plist`
 - `*/15 * * * *` - Every 15 minutes
 - `0 0 1 * *` - First day of month at midnight
 
+## Git Worktree Mode
+
+For tasks that modify code, worktree mode isolates changes in a separate git branch:
+
+### When to Offer Worktree Mode
+Offer worktree isolation when ALL of these are true:
+- Task needs autonomous execution (will make changes)
+- Project is a git repository
+- User wants changes reviewed before merging to main
+
+### Worktree Prompt
+```
+Claude: Should this run in an isolated git worktree?
+        → Yes, create branch and push changes
+        → No, run in main working directory
+```
+
+### How It Works
+1. Task triggers → creates fresh worktree with new branch
+2. Claude runs in the worktree (isolated from main)
+3. Changes are committed and pushed to remote
+4. Worktree is cleaned up after successful push
+5. User reviews the PR at their convenience
+
+### Worktree Configuration
+| Option | Default | Description |
+|--------|---------|-------------|
+| `enabled` | `false` | Run task in isolated git worktree |
+| `branchPrefix` | `"claude-task/"` | Prefix for created branches |
+| `remoteName` | `"origin"` | Git remote to push to |
+
+### Branch Naming
+Branches are named: `{branchPrefix}task-{shortId}-{timestamp}`
+Example: `claude-task/task-abc12345-1705612800`
+
+### Push Failure Behavior
+If push fails (no remote, auth issues, branch protection):
+- Worktree is kept at the base path for manual review
+- User is notified of the location
+- They can manually push or discard changes
+
 ## Example Interactions
 
 ### One-Time Task
@@ -201,6 +247,33 @@ I'll create a recurring task with these settings:
 - Next runs: Mon Jan 6 9:00 AM, Tue Jan 7 9:00 AM, Wed Jan 8 9:00 AM
 
 Task "daily-code-review" created and registered with launchd.
+```
+
+### Task with Worktree Isolation
+```
+User: Every night at 2am, refactor deprecated API calls
+
+Claude: Does this task need to run autonomously?
+        → Yes, run fully autonomous
+        → No, read-only analysis only
+
+User: Yes
+
+Claude: Should this run in an isolated git worktree?
+        → Yes, create branch and push changes
+        → No, run in main working directory
+
+User: Yes
+
+Claude: I'll create a recurring task with worktree isolation:
+- Name: Refactor deprecated API calls
+- Schedule: 0 2 * * * (At 02:00 AM daily)
+- Branch prefix: claude-task/
+- Remote: origin
+- Next runs: Tomorrow 2:00 AM, ...
+
+Task "refactor-deprecated-api-abc123" created.
+Changes will be pushed to a new branch for review.
 ```
 
 ## After Creating

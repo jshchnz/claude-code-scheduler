@@ -64,11 +64,43 @@ Claude: ✓ Task created with autonomous execution enabled
 
 This adds `--dangerously-skip-permissions` to the scheduled command, allowing Claude to run without permission prompts.
 
+### Git Worktree Mode (Isolated Branches)
+
+For tasks that make changes, you can run them in isolated git worktrees. Changes are committed to a new branch and pushed for review—your main branch stays clean.
+
+```
+You: Every night at 2am, refactor deprecated API calls and push for review
+
+Claude: Should this run in an isolated git worktree?
+        → Yes, create branch and push changes
+        → No, run in main working directory
+
+You: Yes
+
+Claude: ✓ Task created with worktree isolation
+        Branch prefix: claude-task/
+        Remote: origin
+```
+
+**How it works:**
+1. Task triggers → creates fresh worktree with new branch
+2. Claude runs in the worktree (isolated from main)
+3. Changes are committed and pushed to remote
+4. Worktree is cleaned up after successful push
+5. You review the PR at your convenience
+
+**What happens:**
+- `branchPrefix: "claude-task/"` → branches named like `claude-task/task-abc123-1234567890`
+- `remoteName: "origin"` → pushes to your default remote
+
+If push fails (no remote, auth issues), the worktree is kept at `~/.worktrees/` for manual review.
+
 ## Features
 
 - **Natural language** — "every weekday at 9am" just works
 - **One-time & recurring** — reminders or automated workflows
 - **Autonomous mode** — tasks can edit files, run commands, make commits
+- **Git worktree isolation** — run tasks in isolated branches, auto-push for review
 - **Cross-platform** — macOS (launchd), Linux (crontab), Windows (Task Scheduler)
 - **Native schedulers** — reliable, survives restarts
 - **Auto-cleanup** — one-time tasks delete themselves after running
@@ -163,11 +195,25 @@ Example task structure:
     "command": "Review yesterday's commits",
     "workingDirectory": ".",
     "timeout": 300,
-    "skipPermissions": true
+    "skipPermissions": true,
+    "worktree": {
+      "enabled": false,
+      "branchPrefix": "claude-task/",
+      "remoteName": "origin"
+    }
   },
   "tags": ["code-quality", "daily"]
 }
 ```
+
+### Worktree Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `enabled` | `false` | Run task in isolated git worktree |
+| `branchPrefix` | `"claude-task/"` | Prefix for created branches |
+| `remoteName` | `"origin"` | Git remote to push to |
+| `basePath` | (auto) | Custom path for worktrees |
 
 ## How It Works
 
