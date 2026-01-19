@@ -47,6 +47,40 @@ For tasks that repeat on a schedule:
 
 **Detection rule:** Unless "every", "daily", "weekly", or similar recurring keywords are present, the task is treated as **one-time**.
 
+### Git Worktree Mode (Isolated Branches)
+
+For tasks that make changes, worktree mode runs them in isolation:
+
+```
+You: Every night at 2am, refactor deprecated API calls and push for review
+
+Claude: Should this run in an isolated git worktree?
+        → Yes, create branch and push changes
+        → No, run in main working directory
+
+You: Yes
+
+Claude: ✓ Task created with worktree isolation
+        Branch prefix: claude-task/
+        Remote: origin
+```
+
+**How it works:**
+1. Task triggers → creates fresh worktree with new branch
+2. Claude runs in the worktree (isolated from main)
+3. Changes are committed and pushed to remote
+4. Worktree is cleaned up after successful push
+5. You review the PR at your convenience
+
+**Configuration options:**
+| Option | Default | Description |
+|--------|---------|-------------|
+| `worktree.enabled` | `false` | Enable worktree isolation |
+| `worktree.branchPrefix` | `"claude-task/"` | Branch name prefix |
+| `worktree.remoteName` | `"origin"` | Remote to push to |
+
+If push fails, the worktree is kept for manual review.
+
 ## Cron Quick Reference
 
 ```
