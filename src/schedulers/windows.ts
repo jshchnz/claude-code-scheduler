@@ -221,7 +221,7 @@ export class WindowsScheduler extends BaseScheduler {
     // Extract time if hour and minute are specific
     let time: string | undefined;
     if (minute !== '*' && hour !== '*') {
-      const h = minute.includes('/') ? '00' : hour.padStart(2, '0');
+      const h = hour.includes('/') ? '00' : hour.padStart(2, '0');
       const m = minute.includes('/') ? '00' : minute.padStart(2, '0');
       time = `${h}:${m}`;
     }
