@@ -67,7 +67,8 @@ export class LinuxScheduler extends BaseScheduler {
         .filter((line) => !line.includes(`${this.MARKER_PREFIX}${task.id}`));
 
       // Add new entry
-      const cronLine = `${cronExpr} ${cronCommand} >> "${logPath}" 2>&1 ${this.MARKER_PREFIX}${task.id}`;
+      const escapedLogPath = shellEscape(logPath);
+      const cronLine = `${cronExpr} ${cronCommand} >> ${escapedLogPath} 2>&1 ${this.MARKER_PREFIX}${task.id}`;
       lines.push(cronLine);
 
       // Update crontab

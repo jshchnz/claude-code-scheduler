@@ -194,10 +194,10 @@ ${programArgs}
     ${calendarInterval}
 
     <key>StandardOutPath</key>
-    <string>${logDir}/${task.id}.out.log</string>
+    <string>${this.escapeXml(`${logDir}/${task.id}.out.log`)}</string>
 
     <key>StandardErrorPath</key>
-    <string>${logDir}/${task.id}.err.log</string>
+    <string>${this.escapeXml(`${logDir}/${task.id}.err.log`)}</string>
 
     <key>RunAtLoad</key>
     <false/>
