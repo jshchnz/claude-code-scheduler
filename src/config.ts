@@ -41,17 +41,49 @@ export function getLogsDir(): string {
 }
 
 /**
+ * Validate that a task ID is safe for use in file paths.
+ * Rejects path traversal sequences and characters that could escape the target directory.
+ */
+function validateTaskIdForPath(taskId: string): void {
+  if (
+    taskId.includes('..') ||
+    taskId.includes('/') ||
+    taskId.includes('\\') ||
+    taskId.includes('\0')
+  ) {
+    throw new Error(
+      `Invalid task ID for path construction: "${taskId}" contains forbidden characters`
+    );
+  }
+}
+
+/**
  * Get the log file path for a specific task
  */
 export function getTaskLogPath(taskId: string): string {
-  return path.join(getLogsDir(), `${taskId}.log`);
+  validateTaskIdForPath(taskId);
+  const logPath = path.resolve(getLogsDir(), `${taskId}.log`);
+  const logsDir = path.resolve(getLogsDir());
+  if (!logPath.startsWith(logsDir + path.sep) && logPath !== logsDir) {
+    throw new Error(`Task log path escapes logs directory: ${logPath}`);
+  }
+  return logPath;
 }
 
 /**
  * Get the worktree script path for a specific task
  */
 export function getWorktreeScriptPath(taskId: string): string {
-  return path.join(getLogsDir(), `${taskId}.worktree.sh`);
+  validateTaskIdForPath(taskId);
+  const scriptPath = path.resolve(getLogsDir(), `${taskId}.worktree.sh`);
+  const logsDir = path.resolve(getLogsDir());
+  if (
+    !scriptPath.startsWith(logsDir + path.sep) &&
+    scriptPath !== logsDir
+  ) {
+    throw new Error(`Worktree script path escapes logs directory: ${scriptPath}`);
+  }
+  return scriptPath;
 }
 
 // =============================================================================

@@ -455,18 +455,27 @@ export async function getScannedExecutionByTaskId(
 }
 
 /**
- * Read the content of a log file
+ * Read the content of a log file.
+ * Validates that the path is within the expected logs directory to prevent
+ * arbitrary file reads.
  */
 export async function readLogContent(
   logPath: string,
   options: { tail?: number } = {}
 ): Promise<string> {
   try {
-    if (!(await fs.pathExists(logPath))) {
+    // Validate the path is within the logs directory
+    const resolvedPath = path.resolve(logPath);
+    const logsDir = path.resolve(getLogsDir());
+    if (!resolvedPath.startsWith(logsDir + path.sep) && resolvedPath !== logsDir) {
       return '';
     }
 
-    const content = await fs.readFile(logPath, 'utf-8');
+    if (!(await fs.pathExists(resolvedPath))) {
+      return '';
+    }
+
+    const content = await fs.readFile(resolvedPath, 'utf-8');
 
     if (options.tail && options.tail > 0) {
       const lines = content.split('\n');

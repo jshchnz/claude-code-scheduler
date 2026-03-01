@@ -175,9 +175,18 @@ export type ExecutionHistoryRecord = z.infer<typeof ExecutionHistoryRecordSchema
  */
 export const ScheduledTaskSchema = z.object({
   /**
-   * Unique identifier for this task
+   * Unique identifier for this task.
+   * Must be alphanumeric with hyphens only (prevents crontab injection
+   * via newlines and path traversal via ../ sequences).
    */
-  id: z.string().min(1).describe('Unique task identifier'),
+  id: z
+    .string()
+    .min(1)
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      'Task ID must only contain alphanumeric characters, hyphens, and underscores'
+    )
+    .describe('Unique task identifier'),
 
   /**
    * Human-readable name
