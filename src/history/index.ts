@@ -315,8 +315,8 @@ async function getPlistMetadata(taskId: string): Promise<{
 
   // Try both regular and one-time plist names
   const plistNames = [
-    `com.claude.schedule.${taskId}.plist`,
-    `com.claude.schedule.once.${taskId}.plist`,
+    `com.claude.scheduler.${taskId}.plist`,
+    `com.claude.scheduler.once.${taskId}.plist`,
   ];
 
   for (const plistName of plistNames) {
